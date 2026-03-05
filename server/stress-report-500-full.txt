@@ -1,0 +1,15 @@
+STRESS TEST REPORT
+=====================
+Duration: 300s
+Total Players Spawned: 500
+Peak Active Matches: 247
+Matches Started: 250
+Matches Completed: 21
+Total Moves Processed: 36786
+Peak Moves Per Second (MPS): 333
+Peak Event Loop Delay: 23 ms
+Total Errors: 0
+Peak Heap Memory: 74.11 MB
+Peak RSS Memory: 215.39 MB
+Avg Server CPU Usage: 24.47%
+=====================

@@ -1,0 +1,12 @@
+STRESS TEST REPORT
+=====================
+Duration: 300s
+Total Players Spawned: 200
+Peak Active Matches: 50
+Matches Started: 50
+Matches Completed: 2
+Total Errors: 0
+Peak Heap Memory: 32.16 MB
+Peak RSS Memory: 110.65 MB
+Avg Server CPU Usage: 3.66%
+=====================
