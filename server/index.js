@@ -8,6 +8,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
@@ -758,7 +759,7 @@ process.on('SIGINT', shutdown);
 const users = [];
 
 app.get("/", (req, res) => {
-    res.send("Chess server running");
+    res.send("Checkmate Legends 3D server running");
 });
 
 // REGISTER
@@ -827,14 +828,42 @@ app.post("/api/login", async (req, res) => {
             });
         }
 
+        const token = jwt.sign(
+            { username: user.username },
+            process.env.JWT_SECRET || 'fallback_secret',
+            { expiresIn: "7d" }
+        );
+
         res.json({
             success: true,
-            message: "Login successful"
+            message: "Login successful",
+            token
         });
     } catch (err) {
         console.error(err);
         res.status(500).json({ success: false, message: "Internal server error" });
     }
+});
+
+// ==========================================
+// AUTH MIDDLEWARE
+// ==========================================
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    if (!token) return res.sendStatus(401);
+
+    jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret', (err, user) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+}
+
+// PROTECTED ROUTE
+app.get("/api/profile", authenticateToken, (req, res) => {
+    res.json({ username: req.user.username });
 });
 
 // ==========================================
