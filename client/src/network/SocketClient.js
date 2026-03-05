@@ -42,7 +42,7 @@ export class SocketClient {
         // Connect to the backend server
         // IMPORTANT: Replace 'https://your-backend-name.onrender.com' with your actual Render URL before deploying!
         const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-        const url = isLocal ? window.location.origin : 'https://chess-server-mcc1.onrender.com';
+        const url = isLocal ? window.location.origin : 'https://chess-server-uscl.onrender.com';
 
         // Dynamic import for socket.io client from CDN
         return new Promise((resolve, reject) => {
