@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="Checkmate Legends 3D - Play chess online with realistic 3D graphics">
+  <title>Checkmate Legends 3D — Play Online</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/index.css">
+  <script>
+    window.onerror = function (msg, url, line, col, error) {
+      if (!url || url.includes('socket.io') || url.includes('three')) return;
+      const stack = error ? error.stack : '';
+      fetch('/log', { method: 'POST', body: msg + '\n' + stack, headers: { 'Content-Type': 'text/plain' } })
+        .catch(console.error);
+    };
+    window.addEventListener('unhandledrejection', function (event) {
+      const stack = event.reason ? event.reason.stack : '';
+      fetch('/log', { method: 'POST', body: 'Unhandled Rejection: ' + event.reason + '\n' + stack, headers: { 'Content-Type': 'text/plain' } })
+        .catch(console.error);
+    });
+  </script>
+</head>
+
+<body>
+  <!-- Loading Screen -->
+  <div id="loading-screen">
+    <div class="loader-content">
+      <div class="chess-icon">♔</div>
+      <h1>Checkmate Legends 3D</h1>
+      <div class="loader-bar">
+        <div class="loader-fill"></div>
+      </div>
+      <p>Loading assets...</p>
+    </div>
+  </div>
+
+  <!-- Lobby / Menu Overlay -->
+  <div id="lobby-screen" class="screen hidden">
+    <button class="settings-btn" id="btn-settings" title="Settings">⚙️</button>
+
+    <!-- Top Left Controls (Profile + Friends Toggle + Status) -->
+    <div class="top-left-controls">
+      <div class="player-profile" id="player-profile" title="Click to change name">
+        <span class="profile-avatar" id="profile-avatar">?</span>
+        <span class="profile-name" id="profile-name">Guest</span>
+      </div>
+      <div class="status-toggle-wrapper">
+        <button class="status-btn" id="btn-toggle-status" title="Toggle Online Status">
+          🌍
+          <div class="status-indicator online" id="my-status-dot"></div>
+        </button>
+        <span class="btn-label" id="btn-status-label">ON / OFF</span>
+      </div>
+      <div class="friends-wrapper">
+        <button class="friends-btn" id="btn-toggle-friends" title="Friends List">
+          ⚔️ <span class="notif-badge" id="badge-friends" style="display:none;">0</span>
+        </button>
+        <span class="btn-label">Friends</span>
+      </div>
+      <div class="rules-wrapper">
+        <button class="rules-btn" id="btn-open-rules" title="How to Play & Strategy">
+          💡
+        </button>
+        <span class="btn-label">Rules</span>
+      </div>
+
+    </div>
+
+    <!-- Friends Panel (Sliding Sidebar) -->
+    <div class="friends-panel" id="friends-panel">
+      <div class="friends-header">
+        <h3>Friend List</h3>
+        <button class="close-friends" id="btn-close-friends">✕</button>
+      </div>
+      <div class="add-friend-box">
+        <input type="text" id="add-friend-input" placeholder="Enter friend's name..." />
+        <button id="btn-add-friend" class="modal-btn primary" style="padding: 0.4rem; min-width: 40px;">+</button>
+      </div>
+      <div class="friends-list" id="friends-list">
+        <!-- Friend items will render here -->
+      </div>
+    </div>
+    <div class="lobby-container">
+      <div class="lobby-header">
+        <div class="logo-area">
+          <span class="logo-icon">♔</span>
+          <h1>Checkmate Legends 3D</h1>
+        </div>
+        <p class="tagline">Realistic 3D Chess — Play Online or vs AI</p>
+      </div>
+      <div class="lobby-cards">
+        <button class="lobby-card" id="btn-matchmaking">
+          <div class="card-icon">⚔️</div>
+          <h3>Quick Match</h3>
+          <p>Find an opponent online</p>
+        </button>
+        <button class="lobby-card" id="btn-create-room">
+          <div class="card-icon">🏠</div>
+          <h3>Create Room</h3>
+          <p>Invite a friend to play</p>
+        </button>
+        <button class="lobby-card" id="btn-join-room">
+          <div class="card-icon">🔗</div>
+          <h3>Join Room</h3>
+          <p>Enter a room code</p>
+        </button>
+        <button class="lobby-card" id="btn-play-ai">
+          <div class="card-icon">🤖</div>
+          <h3>Play vs AI</h3>
+          <p>Offline against Stockfish</p>
+        </button>
+        <button class="lobby-card wide" id="btn-local-2p">
+          <div class="card-icon">👥</div>
+          <h3>Local 2 Player</h3>
+          <p>Play on the same device</p>
+        </button>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="leaderboard">
+        <h3 class="leaderboard-title">🏆 Top Players</h3>
+        <div class="leaderboard-list" id="leaderboard-list"></div>
+      </div>
+    </div>
+    <div class="founder-credit">
+      <span class="founder-name">HARDIK PATIL</span>
+      <span class="founder-label">Founder</span>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-screen" class="screen hidden">
+    <!-- Three.js canvas goes here -->
+    <div id="canvas-container"></div>
+
+    <!-- Game HUD -->
+    <div id="game-hud">
+      <!-- Top player (opponent) -->
+      <div class="player-bar top">
+        <div class="player-info">
+          <span class="player-name" id="opponent-name">Opponent</span>
+          <div class="captured-pieces" id="opponent-captured"></div>
+        </div>
+        <div class="player-timer" id="opponent-timer">10:00</div>
+      </div>
+
+      <!-- Bottom player (you) -->
+      <div class="player-bar bottom">
+        <div class="player-info">
+          <span class="player-name" id="player-name">You</span>
+          <div class="captured-pieces" id="player-captured"></div>
+        </div>
+        <div class="player-timer" id="player-timer">10:00</div>
+      </div>
+
+      <!-- Chat Panel -->
+      <div id="chat-panel" class="chat-panel hidden">
+        <div class="chat-header">
+          <h3>Chat</h3>
+          <span id="chat-badge" class="chat-badge hidden">0</span>
+          <button class="icon-btn" id="btn-toggle-chat" title="Minimize Chat">_</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-system">Opponent has joined the game. Say hi!</div>
+        </div>
+        <form class="chat-form" id="chat-form">
+          <button type="button" id="btn-emoji-toggle" class="emoji-btn" title="Emojis">😀</button>
+          <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off" maxlength="100">
+          <button type="submit" id="btn-chat-send" title="Send">➤</button>
+        </form>
+
+        <!-- Emoji Picker Popup -->
+        <div id="emoji-picker" class="emoji-picker hidden">
+          <span class="emoji">👍</span><span class="emoji">👎</span><span class="emoji">😂</span>
+          <span class="emoji">🤔</span><span class="emoji">😢</span><span class="emoji">😡</span>
+          <span class="emoji">🎉</span><span class="emoji">👋</span><span class="emoji">🤝</span>
+          <span class="emoji">🤯</span><span class="emoji">💀</span><span class="emoji">😎</span>
+        </div>
+      </div>
+
+      <!-- Side panel -->
+      <div id="side-panel" class="side-panel">
+        <div class="panel-header">
+          <h3>Moves</h3>
+          <button class="icon-btn" id="btn-toggle-panel" title="Toggle panel">☰</button>
+        </div>
+        <div class="move-list" id="move-list"></div>
+        <div class="game-controls">
+          <button class="ctrl-btn" id="btn-resign" title="Resign">🏳️ Resign</button>
+          <button class="ctrl-btn" id="btn-draw" title="Offer Draw">🤝 Draw</button>
+          <button class="ctrl-btn" id="btn-back-lobby" title="Back to Lobby">🔙 Lobby</button>
+        </div>
+      </div>
+
+      <!-- Turn indicator -->
+      <div id="turn-indicator">
+        <div class="turn-dot"></div>
+        <span id="turn-text">White's turn</span>
+      </div>
+
+      <!-- Status bar -->
+      <div id="status-bar" class="hidden"></div>
+    </div>
+  </div>
+
+  <!-- Modal Overlay -->
+  <div id="modal-overlay" class="hidden">
+    <div class="modal" id="modal">
+      <h2 id="modal-title"></h2>
+      <p id="modal-message"></p>
+      <div id="modal-actions"></div>
+    </div>
+  </div>
+
+  <!-- Animated Rules Overlay -->
+  <div id="rules-overlay" class="hidden">
+    <div class="rules-modal">
+      <div class="rules-header">
+        <h2>🔮 Checkmate Legends Guide</h2>
+        <button class="close-rules" id="btn-close-rules">✕</button>
+      </div>
+
+      <div class="rules-content-container">
+        <!-- Slide 1: Basic Rules -->
+        <div class="rule-slide active" id="rule-slide-1">
+          <div class="rule-icon">👑</div>
+          <h3>The Objective</h3>
+          <p>The goal of chess is to "checkmate" your opponent's king. This happens when their king is under attack and
+            cannot escape capture.</p>
+          <ul class="rule-list">
+            <li>White always moves first.</li>
+            <li>Players take turns moving one piece per turn.</li>
+            <li>Pieces capture by landing on a square occupied by an opponent's piece.</li>
+          </ul>
+        </div>
+
+        <!-- Slide 2: Piece Movements -->
+        <div class="rule-slide" id="rule-slide-2">
+          <div class="rule-icon">♞</div>
+          <h3>How Pieces Move</h3>
+          <p>Every piece has its unique strength and movement pattern:</p>
+          <ul class="rule-list">
+            <li><b>Pawn (♟):</b> Moves forward 1 square (or 2 on its first move). Captures diagonally.</li>
+            <li><b>Knight (♞):</b> Moves in an L-shape (2 squares one direction, 1 square perpendicular). Can jump over
+              other pieces!</li>
+            <li><b>Bishop (♝):</b> Moves diagonally any number of open squares.</li>
+            <li><b>Rook (♜):</b> Moves horizontally or vertically any number of open squares.</li>
+            <li><b>Queen (♛):</b> The most powerful. Moves both diagonally and straight like a Bishop + Rook.</li>
+            <li><b>King (♚):</b> Moves exactly 1 square in any direction.</li>
+          </ul>
+        </div>
+
+        <!-- Slide 3: Essential Strategies -->
+        <div class="rule-slide" id="rule-slide-3">
+          <div class="rule-icon">🛡️</div>
+          <h3>Winning Strategy</h3>
+          <p>Master these core principles to become a legend:</p>
+          <ul class="rule-list">
+            <li><b>Control the Center:</b> Aim to position your pawns and knights in the middle four squares early on.
+            </li>
+            <li><b>Develop Your Pieces:</b> Don't just move pawns. Get your knights and bishops out early to prepare for
+              battle.</li>
+            <li><b>Protect Your King (Castle):</b> Move your king to safety by castling early. Castling moves the king
+              two squares toward a rook, and the rook hops over it.</li>
+            <li><b>Think Ahead:</b> Always ask yourself "Why did my opponent make that move?" before playing yours.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="rules-footer">
+        <button class="modal-btn secondary" id="btn-rule-prev" style="visibility:hidden;">← Prev</button>
+        <div class="rule-indicators">
+          <span class="dot active"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+        <button class="modal-btn primary" id="btn-rule-next">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div id="leaderboard-modal" class="modal hidden">
+    <div class="modal-content" style="max-width: 500px;">
+      <h2>🏆 Top Players</h2>
+      <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-top: -10px; margin-bottom: 20px;">
+        Global Elo Rankings (Top 50)
+      </p>
+
+      <div class="leaderboard-table-container"
+        style="max-height: 400px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px;">
+        <table style="width: 100%; text-align: left; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">
+              <th style="padding: 10px; width: 50px;">Rank</th>
+              <th style="padding: 10px;">Player</th>
+              <th style="padding: 10px; text-align: center;">Rating</th>
+              <th style="padding: 10px; text-align: center;">Wins</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-tbody">
+            <!-- Dynamically populated rows -->
+            <tr>
+              <td colspan="4" style="text-align:center; padding: 20px;">Loading data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 20px;">
+        <button id="btn-close-leaderboard" class="modal-btn ghost">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Socket.io Client -->
+  <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+
+  <!-- Scripts via ES Module imports from CDN -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+      "chess.js": "https://cdn.jsdelivr.net/npm/chess.js@1.0.0-beta.8/+esm"
+    }
+  }
+  </script>
+  <script type="module" src="src/main.js?v=10"></script>
+</body>
+
+</html>
