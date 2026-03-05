@@ -58,7 +58,8 @@ export class SocketClient {
             }
 
             this.socket = io(url, {
-                transports: ['websocket', 'polling'],
+                transports: ['websocket'],
+                secure: true
             });
 
             let connectTimeout = null;
