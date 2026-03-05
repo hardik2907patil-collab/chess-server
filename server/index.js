@@ -5,6 +5,9 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const bcrypt = require('bcrypt');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
@@ -73,6 +76,14 @@ setInterval(() => {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(helmet());
+
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: "Too many requests from this IP, please try again later."
+});
+app.use("/api", apiLimiter);
 
 // Disable caching for development
 app.use((req, res, next) => {
@@ -746,14 +757,25 @@ process.on('SIGINT', shutdown);
 // ==========================================
 const users = [];
 
+app.get("/", (req, res) => {
+    res.send("Chess server running");
+});
+
 // REGISTER
-app.post("/api/register", (req, res) => {
+app.post("/api/register", async (req, res) => {
     const { username, password } = req.body;
 
-    if (!username || !password) {
+    if (!username || typeof username !== 'string' || username.length < 3 || username.length > 20) {
         return res.status(400).json({
             success: false,
-            message: "Username and password required"
+            message: "Username must be between 3 and 20 characters"
+        });
+    }
+
+    if (!password || typeof password !== 'string' || password.length < 6) {
+        return res.status(400).json({
+            success: false,
+            message: "Password must be at least 6 characters long"
         });
     }
 
@@ -765,21 +787,29 @@ app.post("/api/register", (req, res) => {
         });
     }
 
-    users.push({ username, password });
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        users.push({ username, password: hashedPassword });
 
-    res.json({
-        success: true,
-        message: "User registered successfully"
-    });
+        res.json({
+            success: true,
+            message: "User registered successfully"
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
 });
 
 // LOGIN
-app.post("/api/login", (req, res) => {
+app.post("/api/login", async (req, res) => {
     const { username, password } = req.body;
 
-    const user = users.find(
-        u => u.username === username && u.password === password
-    );
+    if (!username || typeof username !== 'string' || !password || typeof password !== 'string') {
+        return res.status(400).json({ success: false, message: "Username and password required" });
+    }
+
+    const user = users.find(u => u.username === username);
 
     if (!user) {
         return res.status(401).json({
@@ -788,10 +818,23 @@ app.post("/api/login", (req, res) => {
         });
     }
 
-    res.json({
-        success: true,
-        message: "Login successful"
-    });
+    try {
+        const valid = await bcrypt.compare(password, user.password);
+        if (!valid) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid username or password"
+            });
+        }
+
+        res.json({
+            success: true,
+            message: "Login successful"
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
 });
 
 // ==========================================
