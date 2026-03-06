@@ -169,7 +169,8 @@ body {
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.status-btn {
+.status-btn,
+.rules-btn {
   background: var(--bg-card);
   border: 1px solid var(--border-glass);
   border-radius: 50%;
@@ -187,7 +188,8 @@ body {
   padding: 0;
 }
 
-.status-btn:hover {
+.status-btn:hover,
+.rules-btn:hover {
   background: rgba(255, 255, 255, 0.08);
   border-color: var(--accent);
   transform: translateY(-2px);
@@ -1837,12 +1839,58 @@ body {
 /* ---- Responsive Breakpoints ---- */
 @media (max-width: 768px) {
   body {
-    padding: 20px;
+    padding: 10px;
+  }
+
+  .top-left-controls {
+    top: 10px;
+    left: 10px;
+    right: 60px;
+    gap: 8px;
+    flex-wrap: wrap;
+    /* prevents overlapping by wrapping the icons */
+  }
+
+  .player-profile {
+    width: 60%;
+    min-width: 160px;
+    padding: 0.2rem 1rem 0.2rem 0.2rem;
+  }
+
+  .profile-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 1.2rem;
+  }
+
+  .profile-name {
+    font-size: 1.1rem;
+  }
+
+  .status-btn,
+  .friends-btn,
+  .rules-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+
+  .settings-btn {
+    top: 10px;
+    right: 10px;
+    width: 44px;
+    height: 44px;
+    font-size: 1.4rem;
+  }
+
+  .lobby-container {
+    padding-top: 8rem;
+    /* Creates breathing room beneath the top controls */
   }
 
   .lobby-cards {
     grid-template-columns: 1fr;
-    width: 90%;
+    width: 100%;
   }
 
   .lobby-card {
@@ -1857,10 +1905,6 @@ body {
 
   .logo-area h1 {
     font-size: 32px;
-  }
-
-  .lobby-container {
-    padding: 2rem 1rem 3rem;
   }
 }
 
