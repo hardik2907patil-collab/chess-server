@@ -759,7 +759,7 @@ process.on('SIGINT', shutdown);
 const users = [];
 
 app.get("/", (req, res) => {
-    res.send("Checkmate Legends 3D server running");
+    res.send("Checkmate Legends 3D backend server running.");
 });
 
 // REGISTER
