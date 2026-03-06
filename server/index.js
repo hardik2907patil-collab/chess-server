@@ -77,7 +77,11 @@ setInterval(() => {
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(helmet());
+// Disable strict CSP which blocks frontend inline scripts and Socket.io CDN
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+}));
 
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
