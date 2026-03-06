@@ -37,8 +37,8 @@ function updateCameraFOV() {
     const aspect = window.innerWidth / window.innerHeight;
     camera.aspect = aspect;
     if (aspect < 1) {
-        // Zoom out on portrait mode to keep the board visible
-        camera.fov = 45 + (1 - aspect) * 35;
+        // Accurately zoom out by scaling FOV against inverse aspect ratio on portrait screens
+        camera.fov = Math.min(45 / aspect, 95);
     } else {
         camera.fov = 45;
     }
@@ -1113,7 +1113,6 @@ document.getElementById('player-profile').addEventListener('click', () => {
             <div style="text-align:center; padding: 1rem;">
                 <div style="font-size: 3.5rem; margin-bottom: 0.5rem; filter: drop-shadow(0 0 10px var(--gold-glow));">${playerAvatar}</div>
                 <div style="font-size: 1.4rem; font-weight: bold; color: var(--text-primary);">${playerDisplayName}</div>
-                <div style="color: var(--text-muted); font-size: 0.95rem; margin-top: 5px;">Rating: <span style="color: var(--accent); font-weight: 600;">${playerRating}</span></div>
             </div>`;
         modalActions.innerHTML = '';
 

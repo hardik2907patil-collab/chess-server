@@ -1574,44 +1574,7 @@ body {
   }
 }
 
-/* ---- Responsive ---- */
-@media (max-width: 600px) {
-  .lobby-cards {
-    grid-template-columns: 1fr;
-  }
-
-  .lobby-card {
-    padding: 1.5rem 1rem;
-  }
-
-  .logo-area h1 {
-    font-size: 2.2rem;
-  }
-
-  .logo-icon {
-    font-size: 2.2rem;
-  }
-
-  .side-panel {
-    display: none;
-  }
-
-  .player-bar {
-    left: 0.5rem;
-    right: 0.5rem;
-    padding: 0.5rem 0.8rem;
-  }
-
-  .player-timer {
-    font-size: 1.2rem;
-  }
-
-  #turn-indicator {
-    bottom: 5rem;
-    font-size: 0.75rem;
-    padding: 0.4rem 1rem;
-  }
-}
+/* ---- Previous 600px queries merged below ---- */
 
 /* ---- Rules Button & Animations ---- */
 .rules-btn {
@@ -1845,15 +1808,15 @@ body {
   .top-left-controls {
     top: 10px;
     left: 10px;
-    right: 60px;
+    right: 50px;
     gap: 8px;
-    flex-wrap: wrap;
-    /* prevents overlapping by wrapping the icons */
+    flex-wrap: nowrap;
   }
 
   .player-profile {
-    width: 60%;
-    min-width: 160px;
+    width: auto;
+    max-width: 45%;
+    min-width: unset;
     padding: 0.2rem 1rem 0.2rem 0.2rem;
   }
 
@@ -1865,27 +1828,31 @@ body {
 
   .profile-name {
     font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .status-btn,
   .friends-btn,
   .rules-btn {
-    width: 44px;
-    height: 44px;
-    font-size: 1.3rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    flex-shrink: 0;
   }
 
   .settings-btn {
     top: 10px;
     right: 10px;
-    width: 44px;
-    height: 44px;
-    font-size: 1.4rem;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
   }
 
   .lobby-container {
-    padding-top: 8rem;
-    /* Creates breathing room beneath the top controls */
+    padding-top: 5rem;
+    padding-bottom: 2rem;
   }
 
   .lobby-cards {
@@ -1896,15 +1863,65 @@ body {
   .lobby-card {
     width: 100%;
     max-width: unset;
-    padding: 20px;
-  }
-
-  .lobby-card.wide {
-    max-width: 100%;
+    padding: 1.5rem 1rem;
   }
 
   .logo-area h1 {
-    font-size: 32px;
+    font-size: 2.2rem;
+  }
+
+  .logo-icon {
+    font-size: 2.2rem;
+  }
+
+  /* Game specific mobile logic */
+  .player-bar {
+    left: 0.5rem;
+    right: 0.5rem;
+    padding: 0.5rem 0.8rem;
+  }
+
+  .player-timer {
+    font-size: 1.2rem;
+  }
+
+  #turn-indicator {
+    bottom: 5.5rem;
+    font-size: 0.75rem;
+    padding: 0.4rem 1rem;
+  }
+
+  .side-panel {
+    top: 4rem;
+    right: 0.5rem;
+    width: 130px;
+    max-height: 200px;
+    background: rgba(35, 25, 55, 0.85);
+  }
+
+  .panel-header h3 {
+    font-size: 0.75rem;
+  }
+
+  .move-list {
+    font-size: 0.7rem;
+  }
+
+  .game-controls {
+    flex-direction: column;
+    padding: 0.3rem;
+  }
+
+  .ctrl-btn {
+    font-size: 0.65rem;
+    padding: 0.3rem;
+  }
+
+  .chat-panel {
+    bottom: 4rem;
+    left: 0.5rem;
+    width: 180px;
+    max-height: 250px;
   }
 }
 
