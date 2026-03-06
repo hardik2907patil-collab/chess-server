@@ -33,11 +33,23 @@ const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerH
 camera.position.set(0, 10, 12);
 
 // Window Resize Handler
+function updateCameraFOV() {
+    const aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = aspect;
+    if (aspect < 1) {
+        // Zoom out on portrait mode to keep the board visible
+        camera.fov = 45 + (1 - aspect) * 35;
+    } else {
+        camera.fov = 45;
+    }
+    camera.updateProjectionMatrix();
+}
+
 window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+    updateCameraFOV();
 });
+updateCameraFOV();
 
 // Orbit Controls
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -1094,7 +1106,45 @@ function promptAuth(isRegistration = false) {
     modalOverlay.classList.remove('hidden');
 }
 
-document.getElementById('player-profile').addEventListener('click', () => promptAuth(false));
+document.getElementById('player-profile').addEventListener('click', () => {
+    if (isAuthenticated && playerDisplayName !== 'Guest') {
+        modalTitle.textContent = 'Account';
+        modalMessage.innerHTML = `
+            <div style="text-align:center; padding: 1rem;">
+                <div style="font-size: 3.5rem; margin-bottom: 0.5rem; filter: drop-shadow(0 0 10px var(--gold-glow));">${playerAvatar}</div>
+                <div style="font-size: 1.4rem; font-weight: bold; color: var(--text-primary);">${playerDisplayName}</div>
+                <div style="color: var(--text-muted); font-size: 0.95rem; margin-top: 5px;">Rating: <span style="color: var(--accent); font-weight: 600;">${playerRating}</span></div>
+            </div>`;
+        modalActions.innerHTML = '';
+
+        const logoutBtn = document.createElement('button');
+        logoutBtn.className = 'modal-btn';
+        logoutBtn.style.background = 'var(--danger)';
+        logoutBtn.style.color = 'white';
+        logoutBtn.textContent = 'Logout';
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('chessUsername');
+            localStorage.removeItem('chessPassword');
+            isAuthenticated = false;
+            playerDisplayName = 'Guest';
+            gameName = 'Guest';
+            document.getElementById('profile-name').textContent = 'Guest';
+            hideModal();
+            showStatus('Logged out successfully. Please register or login to play online.');
+        });
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'modal-btn secondary';
+        closeBtn.textContent = 'Close';
+        closeBtn.addEventListener('click', hideModal);
+
+        modalActions.appendChild(logoutBtn);
+        modalActions.appendChild(closeBtn);
+        modalOverlay.classList.remove('hidden');
+    } else {
+        promptAuth(false);
+    }
+});
 
 // Initialize profile visuals from cache
 if (playerDisplayName) {
