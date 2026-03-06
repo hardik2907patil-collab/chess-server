@@ -32,6 +32,13 @@ container.appendChild(renderer.domElement);
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
 camera.position.set(0, 10, 12);
 
+// Window Resize Handler
+window.addEventListener('resize', () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+});
+
 // Orbit Controls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
